@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>木板填充游戏</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .game-info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .mode-selector {
+            margin: 15px 0;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .mode-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .mode-btn.active {
+            background-color: #2c3e50;
+        }
+        
+        .mode-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 2px;
+            background-color: #bdc3c7;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .cell:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .cell.filled {
+            background-color: #3498db;
+        }
+        
+        .cell.placed {
+            background-color: #2ecc71;
+        }
+        
+        .cell.invalid {
+            background-color: #e74c3c;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .control-btn:hover {
+            background-color: #34495e;
+        }
+        
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 25px;
+        }
+        
+        .stats {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>木板填充游戏</h1>
+    
+    <div class="game-info">
+        <p>使用1×4或4×1的木板填满整个10×10的网格</p>
+        <p>木板数量：25块</p>
+    </div>
+    
+    <div class="mode-selector">
+        <button id="horizontalBtn" class="mode-btn active">水平放置 (1×4)</button>
+        <button id="verticalBtn" class="mode-btn">垂直放置 (4×1)</button>
+    </div>
+    
+    <div class="game-container">
+        <div class="game-board" id="gameBoard"></div>
+    </div>
+    
+    <div class="controls">
+        <button id="resetBtn" class="control-btn">重置游戏</button>
+    </div>
+    
+    <div class="message" id="message"></div>
+    <div class="stats" id="stats">已放置木板: 0/25</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameBoard = document.getElementById('gameBoard');
+            const horizontalBtn = document.getElementById('horizontalBtn');
+            const verticalBtn = document.getElementById('verticalBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const messageEl = document.getElementById('message');
+            const statsEl = document.getElementById('stats');
+            
+            const BOARD_SIZE = 10;
+            const PLANK_SIZE = 4;
+            const TOTAL_PLANKS = 25;
+            
+            let board = [];
+            let currentMode = 'horizontal'; // 'horizontal' or 'vertical'
+            let placedPlanks = 0;
+            
+            // 初始化游戏板
+            function initBoard() {
+                gameBoard.innerHTML = '';
+                board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        cell.addEventListener('click', () => placePlank(row, col));
+                        
+                        cell.addEventListener('mouseover', () => highlightCells(row, col));
+                        cell.addEventListener('mouseout', () => removeHighlight());
+                        
+                        gameBoard.appendChild(cell);
+                    }
+                }
+                
+                placedPlanks = 0;
+                updateStats();
+                messageEl.textContent = '';
+            }
+            
+            // 放置木板
+            function placePlank(row, col) {
+                if (isValidPlacement(row, col)) {
+                    // 标记放置的木板
+                    if (currentMode === 'horizontal') {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            board[row][col + i] = 1;
+                            updateCell(row, col + i, 'placed');
+                        }
+                    } else {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            board[row + i][col] = 1;
+                            updateCell(row + i, col, 'placed');
+                        }
+                    }
+                    
+                    placedPlanks++;
+                    updateStats();
+                    
+                    // 检查胜利条件
+                    if (placedPlanks === TOTAL_PLANKS) {
+                        messageEl.textContent = '恭喜！你成功填满了整个网格！';
+                    }
+                } else {
+                    messageEl.textContent = '无法在此位置放置木板';
+                    setTimeout(() => {
+                        messageEl.textContent = '';
+                    }, 2000);
+                }
+            }
+            
+            // 检查放置是否有效
+            function isValidPlacement(row, col) {
+                if (currentMode === 'horizontal') {
+                    // 检查是否超出边界
+                    if (col + PLANK_SIZE > BOARD_SIZE) return false;
+                    
+                    // 检查所有格子是否为空
+                    for (let i = 0; i < PLANK_SIZE; i++) {
+                        if (board[row][col + i] !== 0) return false;
+                    }
+                } else {
+                    // 检查是否超出边界
+                    if (row + PLANK_SIZE > BOARD_SIZE) return false;
+                    
+                    // 检查所有格子是否为空
+                    for (let i = 0; i < PLANK_SIZE; i++) {
+                        if (board[row + i][col] !== 0) return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // 高亮显示可放置区域
+            function highlightCells(row, col) {
+                if (isValidPlacement(row, col)) {
+                    if (currentMode === 'horizontal') {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            updateCell(row, col + i, 'filled');
+                        }
+                    } else {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            updateCell(row + i, col, 'filled');
+                        }
+                    }
+                } else {
+                    if (currentMode === 'horizontal' && col + PLANK_SIZE <= BOARD_SIZE) {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            updateCell(row, col + i, 'invalid');
+                        }
+                    } else if (currentMode === 'vertical' && row + PLANK_SIZE <= BOARD_SIZE) {
+                        for (let i = 0; i < PLANK_SIZE; i++) {
+                            updateCell(row + i, col, 'invalid');
+                        }
+                    }
+                }
+            }
+            
+            // 移除高亮
+            function removeHighlight() {
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        if (board[row][col] === 0) {
+                            updateCell(row, col, '');
+                        }
+                    }
+                }
+            }
+            
+            // 更新单元格样式
+            function updateCell(row, col, className) {
+                const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+                cell.className = 'cell';
+                if (className) {
+                    cell.classList.add(className);
+                }
+            }
+            
+            // 更新统计信息
+            function updateStats() {
+                statsEl.textContent = `已放置木板: ${placedPlanks}/${TOTAL_PLANKS}`;
+            }
+            
+            // 切换放置模式
+            horizontalBtn.addEventListener('click', function() {
+                currentMode = 'horizontal';
+                horizontalBtn.classList.add('active');
+                verticalBtn.classList.remove('active');
+            });
+            
+            verticalBtn.addEventListener('click', function() {
+                currentMode = 'vertical';
+                verticalBtn.classList.add('active');
+                horizontalBtn.classList.remove('active');
+            });
+            
+            // 重置游戏
+            resetBtn.addEventListener('click', initBoard);
+            
+            // 初始化游戏
+            initBoard();
+        });
+    </script>
+</body>
+</html>
