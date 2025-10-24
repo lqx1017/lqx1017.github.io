@@ -5,55 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>木板填充游戏</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f8ff;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
         }
         
         h1 {
             color: #2c3e50;
             margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .game-info {
             margin-bottom: 20px;
             text-align: center;
+            font-size: 1.1rem;
+            color: #34495e;
+            line-height: 1.6;
         }
         
-        .mode-selector {
-            margin: 15px 0;
+        .stats-container {
             display: flex;
-            gap: 15px;
+            justify-content: space-between;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
-        .mode-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #3498db;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        
-        .mode-btn.active {
-            background-color: #2c3e50;
-        }
-        
-        .mode-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .game-container {
+        .stat {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .mode-selector {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .mode-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .game-board-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
         }
         
         .game-board {
@@ -61,55 +118,75 @@
             grid-template-columns: repeat(10, 40px);
             grid-template-rows: repeat(10, 40px);
             gap: 2px;
-            background-color: #bdc3c7;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
         
         .cell {
             width: 40px;
             height: 40px;
             background-color: #ecf0f1;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
         
         .cell:hover {
             background-color: #d5dbdb;
+            transform: scale(1.05);
         }
         
         .cell.filled {
             background-color: #3498db;
+            color: white;
         }
         
         .cell.placed {
             background-color: #2ecc71;
+            color: white;
         }
         
         .cell.invalid {
             background-color: #e74c3c;
+            color: white;
         }
         
         .controls {
-            margin-top: 20px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
         }
         
         .control-btn {
-            padding: 10px 20px;
-            margin: 0 10px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 5px;
-            background-color: #2c3e50;
+            border-radius: 50px;
+            background: linear-gradient(to right, #2c3e50, #3498db);
             color: white;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .control-btn:hover {
-            background-color: #34495e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .control-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         .message {
@@ -117,37 +194,175 @@
             font-size: 18px;
             font-weight: bold;
             min-height: 25px;
+            color: #2c3e50;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
         }
         
-        .stats {
-            margin-top: 10px;
-            font-size: 16px;
+        .congratulations {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .congratulations-content {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            animation: scaleUp 0.5s ease-out;
+        }
+        
+        .congratulations h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .congratulations p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .congratulations button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background-color: white;
+            color: #2575fc;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .congratulations button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .history h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .history-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .game-board {
+                grid-template-columns: repeat(10, 30px);
+                grid-template-rows: repeat(10, 30px);
+            }
+            
+            .cell {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+            
+            .mode-btn, .control-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>木板填充游戏</h1>
-    
-    <div class="game-info">
-        <p>使用1×4或4×1的木板填满整个10×10的网格</p>
-        <p>木板数量：25块</p>
+    <div class="container">
+        <h1>木板填充游戏</h1>
+        
+        <div class="game-info">
+            <p>使用1×4或4×1的木板填满整个10×10的网格</p>
+            <p>木板数量：25块</p>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat">
+                <div class="stat-value" id="placedPlanks">0</div>
+                <div class="stat-label">已放置木板</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="remainingPlanks">25</div>
+                <div class="stat-label">剩余木板</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="movesCount">0</div>
+                <div class="stat-label">总步数</div>
+            </div>
+        </div>
+        
+        <div class="mode-selector">
+            <button id="horizontalBtn" class="mode-btn active">水平放置 (1×4)</button>
+            <button id="verticalBtn" class="mode-btn">垂直放置 (4×1)</button>
+        </div>
+        
+        <div class="game-board-container">
+            <div class="game-board" id="gameBoard"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="undoBtn" class="control-btn" disabled>撤回一步</button>
+            <button id="resetBtn" class="control-btn">重置游戏</button>
+        </div>
+        
+        <div class="message" id="message">选择放置模式，然后点击网格放置木板</div>
+        
+        <div class="history">
+            <h3>操作历史</h3>
+            <div id="historyList"></div>
+        </div>
     </div>
     
-    <div class="mode-selector">
-        <button id="horizontalBtn" class="mode-btn active">水平放置 (1×4)</button>
-        <button id="verticalBtn" class="mode-btn">垂直放置 (4×1)</button>
+    <div class="congratulations" id="congratulations">
+        <div class="congratulations-content">
+            <h2>恭喜通关！</h2>
+            <p>你成功使用25块木板填满了整个网格！</p>
+            <p>总步数: <span id="finalMoves">0</span></p>
+            <button id="playAgainBtn">再玩一次</button>
+        </div>
     </div>
-    
-    <div class="game-container">
-        <div class="game-board" id="gameBoard"></div>
-    </div>
-    
-    <div class="controls">
-        <button id="resetBtn" class="control-btn">重置游戏</button>
-    </div>
-    
-    <div class="message" id="message"></div>
-    <div class="stats" id="stats">已放置木板: 0/25</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -155,16 +370,26 @@
             const horizontalBtn = document.getElementById('horizontalBtn');
             const verticalBtn = document.getElementById('verticalBtn');
             const resetBtn = document.getElementById('resetBtn');
+            const undoBtn = document.getElementById('undoBtn');
             const messageEl = document.getElementById('message');
-            const statsEl = document.getElementById('stats');
+            const placedPlanksEl = document.getElementById('placedPlanks');
+            const remainingPlanksEl = document.getElementById('remainingPlanks');
+            const movesCountEl = document.getElementById('movesCount');
+            const congratulationsEl = document.getElementById('congratulations');
+            const finalMovesEl = document.getElementById('finalMoves');
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            const historyListEl = document.getElementById('historyList');
             
             const BOARD_SIZE = 10;
             const PLANK_SIZE = 4;
             const TOTAL_PLANKS = 25;
             
             let board = [];
-            let currentMode = 'horizontal'; // 'horizontal' or 'vertical'
+            let currentMode = 'horizontal';
             let placedPlanks = 0;
+            let movesCount = 0;
+            let moveHistory = [];
+            let highlightedCells = [];
             
             // 初始化游戏板
             function initBoard() {
@@ -181,46 +406,91 @@
                         cell.addEventListener('click', () => placePlank(row, col));
                         
                         cell.addEventListener('mouseover', () => highlightCells(row, col));
-                        cell.addEventListener('mouseout', () => removeHighlight());
+                        cell.addEventListener('mouseout', removeHighlight);
                         
                         gameBoard.appendChild(cell);
                     }
                 }
                 
                 placedPlanks = 0;
+                movesCount = 0;
+                moveHistory = [];
                 updateStats();
-                messageEl.textContent = '';
+                updateHistory();
+                undoBtn.disabled = true;
+                messageEl.textContent = '选择放置模式，然后点击网格放置木板';
             }
             
             // 放置木板
             function placePlank(row, col) {
                 if (isValidPlacement(row, col)) {
+                    // 记录放置的木板信息
+                    const plank = {
+                        mode: currentMode,
+                        row: row,
+                        col: col,
+                        cells: []
+                    };
+                    
                     // 标记放置的木板
                     if (currentMode === 'horizontal') {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             board[row][col + i] = 1;
                             updateCell(row, col + i, 'placed');
+                            plank.cells.push({row: row, col: col + i});
                         }
                     } else {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             board[row + i][col] = 1;
                             updateCell(row + i, col, 'placed');
+                            plank.cells.push({row: row + i, col: col});
                         }
                     }
                     
+                    // 添加到历史记录
+                    moveHistory.push(plank);
                     placedPlanks++;
+                    movesCount++;
                     updateStats();
+                    updateHistory();
+                    undoBtn.disabled = false;
                     
                     // 检查胜利条件
                     if (placedPlanks === TOTAL_PLANKS) {
-                        messageEl.textContent = '恭喜！你成功填满了整个网格！';
+                        showCongratulations();
+                    } else {
+                        messageEl.textContent = `成功放置木板！已放置: ${placedPlanks}/25`;
                     }
                 } else {
                     messageEl.textContent = '无法在此位置放置木板';
                     setTimeout(() => {
-                        messageEl.textContent = '';
+                        messageEl.textContent = '选择放置模式，然后点击网格放置木板';
                     }, 2000);
                 }
+            }
+            
+            // 撤回上一步
+            function undoMove() {
+                if (moveHistory.length === 0) return;
+                
+                const lastMove = moveHistory.pop();
+                
+                // 移除木板
+                for (const cell of lastMove.cells) {
+                    board[cell.row][cell.col] = 0;
+                    updateCell(cell.row, cell.col, '');
+                }
+                
+                placedPlanks--;
+                movesCount++;
+                updateStats();
+                updateHistory();
+                
+                if (moveHistory.length === 0) {
+                    undoBtn.disabled = true;
+                }
+                
+                messageEl.textContent = '已撤回上一步操作';
             }
             
             // 检查放置是否有效
@@ -248,24 +518,32 @@
             
             // 高亮显示可放置区域
             function highlightCells(row, col) {
+                removeHighlight();
+                
                 if (isValidPlacement(row, col)) {
+                    highlightedCells = [];
+                    
                     if (currentMode === 'horizontal') {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             updateCell(row, col + i, 'filled');
+                            highlightedCells.push({row: row, col: col + i});
                         }
                     } else {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             updateCell(row + i, col, 'filled');
+                            highlightedCells.push({row: row + i, col: col});
                         }
                     }
                 } else {
                     if (currentMode === 'horizontal' && col + PLANK_SIZE <= BOARD_SIZE) {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             updateCell(row, col + i, 'invalid');
+                            highlightedCells.push({row: row, col: col + i});
                         }
                     } else if (currentMode === 'vertical' && row + PLANK_SIZE <= BOARD_SIZE) {
                         for (let i = 0; i < PLANK_SIZE; i++) {
                             updateCell(row + i, col, 'invalid');
+                            highlightedCells.push({row: row + i, col: col});
                         }
                     }
                 }
@@ -273,13 +551,12 @@
             
             // 移除高亮
             function removeHighlight() {
-                for (let row = 0; row < BOARD_SIZE; row++) {
-                    for (let col = 0; col < BOARD_SIZE; col++) {
-                        if (board[row][col] === 0) {
-                            updateCell(row, col, '');
-                        }
+                for (const cell of highlightedCells) {
+                    if (board[cell.row][cell.col] === 0) {
+                        updateCell(cell.row, cell.col, '');
                     }
                 }
+                highlightedCells = [];
             }
             
             // 更新单元格样式
@@ -293,7 +570,41 @@
             
             // 更新统计信息
             function updateStats() {
-                statsEl.textContent = `已放置木板: ${placedPlanks}/${TOTAL_PLANKS}`;
+                placedPlanksEl.textContent = placedPlanks;
+                remainingPlanksEl.textContent = TOTAL_PLANKS - placedPlanks;
+                movesCountEl.textContent = movesCount;
+            }
+            
+            // 更新历史记录
+            function updateHistory() {
+                historyListEl.innerHTML = '';
+                
+                // 只显示最近5条记录
+                const recentHistory = moveHistory.slice(-5);
+                
+                for (let i = recentHistory.length - 1; i >= 0; i--) {
+                    const move = recentHistory[i];
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    const modeText = move.mode === 'horizontal' ? '水平' : '垂直';
+                    historyItem.textContent = `第${moveHistory.length - i}步: ${modeText}木板 (${move.row}, ${move.col})`;
+                    
+                    historyListEl.appendChild(historyItem);
+                }
+                
+                if (recentHistory.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'history-item';
+                    emptyMsg.textContent = '暂无操作记录';
+                    historyListEl.appendChild(emptyMsg);
+                }
+            }
+            
+            // 显示通关祝贺
+            function showCongratulations() {
+                finalMovesEl.textContent = movesCount;
+                congratulationsEl.style.display = 'flex';
             }
             
             // 切换放置模式
@@ -301,16 +612,27 @@
                 currentMode = 'horizontal';
                 horizontalBtn.classList.add('active');
                 verticalBtn.classList.remove('active');
+                messageEl.textContent = '当前模式: 水平放置 (1×4)';
             });
             
             verticalBtn.addEventListener('click', function() {
                 currentMode = 'vertical';
                 verticalBtn.classList.add('active');
                 horizontalBtn.classList.remove('active');
+                messageEl.textContent = '当前模式: 垂直放置 (4×1)';
             });
+            
+            // 撤回一步
+            undoBtn.addEventListener('click', undoMove);
             
             // 重置游戏
             resetBtn.addEventListener('click', initBoard);
+            
+            // 再玩一次
+            playAgainBtn.addEventListener('click', function() {
+                congratulationsEl.style.display = 'none';
+                initBoard();
+            });
             
             // 初始化游戏
             initBoard();
